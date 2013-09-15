@@ -3,10 +3,14 @@ WinK760
 
 WinK760: A utility for enabling Fn-key inversion for the Logitech K760 keyboard on Windows.
 
-WinK760 is inspired by Solaar and UPower and makes use of HID API with some modifications.
+WinK760 is inspired by Solaar and UPower and makes use of HID API with some minor modifications.
+
+Building
+--------
+Build using CMake. Tested using MinGW (GCC 4.8.1) and Visual Studio 2012.
 
 Todo
------
+----
 * Change application into systray application that monitors the state of the keyboard
 * Enable battery status monitoring
 
