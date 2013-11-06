@@ -1,10 +1,3 @@
-//
-// WinK760: A utility for enabling Fn-key inversion for the Logitech K760 keyboard on Windows.
-//
-// WinK760 is inspired by the Solaar and UPower libraries.
-//
-// Copyright 2013 Jesper Hellesø Hansen
-
 #pragma comment(lib, "Setupapi.lib")
 
 #include <Windows.h>
@@ -100,7 +93,7 @@ void shutdown(const char* cause = 0, hid_device* handle = 0)
     system("pause");
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+int mainfunc(void)
 {
     printf("Logitech K760 Fn-Lock switcher for Windows\n\n");
 
