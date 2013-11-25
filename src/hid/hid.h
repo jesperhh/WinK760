@@ -1,0 +1,1 @@
+bool setFunctionKeyStatus(bool status);

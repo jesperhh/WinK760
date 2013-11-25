@@ -1,9 +1,10 @@
 #pragma comment(lib, "Setupapi.lib")
 
+#include "hid.h"
 #include <Windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "hidapi.h"
+#include "../hidapi/hidapi.h"
 
 #define LOGITECH_K760_VENDOR_ID                 0x046d
 #define LOGITECH_K760_PRODUCT_ID                0xb318
@@ -93,15 +94,12 @@ void shutdown(const char* cause = 0, hid_device* handle = 0)
     system("pause");
 }
 
-int mainfunc(void)
+bool setFunctionKeyStatus(bool status)
 {
-    printf("Logitech K760 Fn-Lock switcher for Windows\n\n");
-
     hid_device *handle = init();
 	if (!handle)
     {
-        shutdown("Could not initialize HIDAPI");
-        return 1;
+        return false;
     }
 
     UINT8 buf[HIDPP_RESPONSE_LONG_LENGTH];
@@ -113,8 +111,7 @@ int mainfunc(void)
     
     if (res || buf[4] != 2 || buf[6] != ping)
     {
-        shutdown("Ping failed", handle);
-        return 1;
+        return false;
     }
 
     res = write_device_cmd(handle, 
@@ -126,24 +123,16 @@ int mainfunc(void)
 
     if (res)
     {
-        shutdown("Get feature failed", handle);
-        return 1;
+        return false;
     }
 
     UINT8 fn_invert_idx = buf[4];
 
-    write_device_cmd(handle, 
+    res = write_device_cmd(handle, 
         fn_invert_idx, 
         HIDPP_FEATURE_STATUS_SET, 
         HIDPP_FEATURE_STATUS_ON,
         0, 0, buf);
 
-    if (res)
-    {
-        shutdown("Feature set failed", handle);
-        return 1;
-    }
-
-	shutdown("Operation completed succesfully", handle);
-	return 0;
+	return !res;
 }

@@ -7,13 +7,19 @@
 
 #include <QtGui/QGuiApplication>
 #include <QQuickView>
+#include <QQmlContext>
+#include "qt/ApplicationContext.h"
+#include "qt/KeyboardEventFilter.h"
 
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
 
     QQuickView viewer;
-    /*viewer.connect(viewer.engine(), SIGNAL(viewer.quit()), SLOT(viewer.close()));*/
+    KeyboardEventFilter reloadQml(viewer, QString("C:/Users/Jesper/Code/WinK760/res/qml/window/main.qml"), &viewer);
+    ApplicationContext appContext(&app);
+    app.installEventFilter(&reloadQml);
+    viewer.rootContext()->setContextProperty("appContext", &appContext);
     viewer.setSource(QStringLiteral("qrc:/qml/window/main.qml"));
     viewer.show();
 
