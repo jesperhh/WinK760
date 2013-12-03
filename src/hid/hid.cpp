@@ -23,29 +23,38 @@
 
 #define ERROR_RETURN_VAL                        -1
 
+static hid_device *handle = 0;
 
-hid_device* init()
+bool init()
 {
 	/* Initialize HIDAPI */
 	if (hid_init())
-		return 0;
+		return false;
 
+    /* Enumerate HID device */
     struct hid_device_info *devs, *cur_dev;
 	devs = hid_enumerate(LOGITECH_K760_VENDOR_ID, LOGITECH_K760_PRODUCT_ID);
 	cur_dev = devs;	
 
 	char* path_to_open = 0;
 	while (cur_dev) {
-		if (cur_dev->output_length == HIDPP_RESPONSE_LONG_LENGTH)
+		if (cur_dev->interface_number == 3) /*cur_dev->usage_page == 0xff00 && cur_dev->usage == 0x0002)*/
 			path_to_open = cur_dev->path;
 
 		cur_dev = cur_dev->next;
 	}
 
-	hid_device *handle = hid_open_path(path_to_open);
+    if (path_to_open == 0)
+        return false;
+
+    /* Open HID device */
+	handle = hid_open_path(path_to_open);
 	hid_free_enumeration(devs);
 
-	return handle;
+    if (hid_set_nonblocking(handle, 1))
+        return false;
+
+    return true;
 }
 
 void print_buf(char* header, UINT8 *buf)
@@ -64,6 +73,7 @@ int write_device_cmd(hid_device* device,
 					  UINT8 parm1, UINT8 parm2, UINT8 parm3,
 					  UINT8 *response)
 {
+    /* Prepare command */
 	UINT8 buf[HIDPP_RESPONSE_LONG_LENGTH];
 	memset(buf, 0, HIDPP_RESPONSE_LONG_LENGTH);
 	buf[0] = HIDPP_HEADER_REQUEST;
@@ -74,34 +84,32 @@ int write_device_cmd(hid_device* device,
 	buf[5] = parm2;
 	buf[6] = parm3;
 
+    /* Write command to hid device */
     if (hid_write(device, buf, HIDPP_RESPONSE_LONG_LENGTH) != HIDPP_RESPONSE_LONG_LENGTH)
         return ERROR_RETURN_VAL;
+
+    /* try to read response from hid device */
+    DWORD start = GetTickCount();
     if (hid_read_timeout(device, response, HIDPP_RESPONSE_LONG_LENGTH, HIDPP_TIMEOUT) != HIDPP_RESPONSE_LONG_LENGTH)
         return ERROR_RETURN_VAL;
 
     return 0;
 }
 
-void shutdown(const char* cause = 0, hid_device* handle = 0)
+void finalize(void)
 {
-    if (cause)
-        printf("%s\n", cause);
-
+    /* Close hid handle (if it exists) and finalize hidapi library */
     if (handle)
-        hid_close(handle);
-
-    hid_exit();
-    system("pause");
-}
-
-bool setFunctionKeyStatus(bool status)
-{
-    hid_device *handle = init();
-	if (!handle)
     {
-        return false;
+        hid_close(handle);
+        handle = 0;
     }
 
+    hid_exit();
+}
+
+bool pingKeyboard(void)
+{
     UINT8 buf[HIDPP_RESPONSE_LONG_LENGTH];
     UINT8 ping = 0x42;
     int res = write_device_cmd(handle, 
@@ -109,12 +117,36 @@ bool setFunctionKeyStatus(bool status)
         HIDPP_FEATURE_ROOT_FN_PING,
         0, 0, ping, buf);
     
-    if (res || buf[4] != 2 || buf[6] != ping)
-    {
-        return false;
-    }
+    return !(res || buf[4] != 2 || buf[6] != ping);
+}
 
-    res = write_device_cmd(handle, 
+bool getChargeInformation(int& charge)
+{
+    if (!init())
+        return false;
+
+    UINT8 buf[HIDPP_RESPONSE_LONG_LENGTH];
+    int res;
+    buf[0] = 0x3;
+    res = hid_get_feature_report(handle, buf, HIDPP_RESPONSE_LONG_LENGTH);
+    /*while (true)
+    {
+        res = hid_read(handle, buf, HIDPP_RESPONSE_LONG_LENGTH);
+        if (res != 0)
+            break;
+    }*/
+    charge = buf[1];
+    return res != -1;
+}
+
+bool setFunctionKeyStatus(bool status)
+{
+    if (!init())
+        return false;
+
+    /* Get feature index */
+    UINT8 buf[HIDPP_RESPONSE_LONG_LENGTH];
+    int res = write_device_cmd(handle, 
         HIDPP_FEATURE_ROOT_INDEX, 
         HIDPP_FEATURE_ROOT_FN_GET_FEATURE, 
         HIDPP_FN_INVERT_UPPER, 
@@ -122,16 +154,14 @@ bool setFunctionKeyStatus(bool status)
         00, buf);
 
     if (res)
-    {
         return false;
-    }
 
+    /* Set feature status */
     UINT8 fn_invert_idx = buf[4];
-
     res = write_device_cmd(handle, 
         fn_invert_idx, 
         HIDPP_FEATURE_STATUS_SET, 
-        HIDPP_FEATURE_STATUS_ON,
+        status ? HIDPP_FEATURE_STATUS_ON : HIDPP_FEATURE_STATUS_OFF,
         0, 0, buf);
 
 	return !res;

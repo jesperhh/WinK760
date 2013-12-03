@@ -23,10 +23,12 @@ class ApplicationContext : public QObject
     Q_PROPERTY_FULL(RemapFunctionKeys, bool)
     Q_PROPERTY_FULL(WatchDevices, bool)
     Q_PROPERTY_FULL(Locked, bool)
+    Q_PROPERTY_FULL(Battery, int)
     
 public:
     explicit ApplicationContext(QObject *parent = 0);
     ~ApplicationContext();
+    Q_INVOKABLE void refreshBattery(void);
 
 private slots:
     void RemapFunctionKeysChangedHandler();

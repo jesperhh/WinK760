@@ -24,3 +24,12 @@ void ApplicationContext::OperationFinished(void)
 {
     this->setLocked(false);
 }
+
+Q_INVOKABLE void ApplicationContext::refreshBattery(void)
+{
+    int charge;
+    bool res = getChargeInformation(charge);
+    /*m_futureWatcher.setFuture(QtConcurrent::run(getChargeInformation));*/
+    if (res)
+        this->setBattery(charge);
+}

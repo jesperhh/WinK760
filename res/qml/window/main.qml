@@ -1,6 +1,7 @@
-    import QtQuick 2.0
+import QtQuick 2.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
+import QtGraphicalEffects 1.0
 
 Item {
     id: root
@@ -58,15 +59,57 @@ Item {
                 }
             }
         }
+
+        Button {
+            id: battery
+            text: "Battery: " + appContext.Battery
+            onClicked: appContext.refreshBattery();
+        }
     }
 
-    Rectangle {
+    Item {
+        id: loading
         visible: appContext.Locked
+        property real offset: 0.0
+        property real cX: root.width / 2.0
+        property real cY: root.height / 2.0
         anchors.fill: parent
-        color: "#000000"
-        opacity: 0.5
+
+        NumberAnimation on offset {
+            from: 0.0
+            to: Math.PI * 2.0
+            duration: 3000
+            onStopped: { restart(); }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#000000"
+            opacity: 0.5
+        }
         MouseArea {
             anchors.fill: parent
+        }
+
+        Text {
+            text: qsTr("Updating ...")
+            anchors.centerIn: parent
+            font.pointSize: 20
+            color: "white"
+        }
+
+        Repeater {
+            id: repeater
+            model: 20
+            Rectangle {
+                smooth: true
+                color: "white"
+                width: 20 - index / 2.0
+                height: width
+                radius: width / 2.0
+                x: Math.cos(loading.offset + index * 2.0 * Math.PI / repeater.model) * loading.cX * 0.7 + loading.cX - radius
+                y: Math.sin(loading.offset + index * 2.0 * Math.PI / repeater.model) * loading.cY * 0.7 + loading.cY - radius
+            }
         }
     }
 }
