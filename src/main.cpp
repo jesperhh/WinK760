@@ -3,25 +3,50 @@
 //
 // WinK760 is inspired by the Solaar and UPower libraries.
 //
-// Copyright 2013 Jesper Hellesø Hansen
+// Copyright 2013-2014 Jesper Hellesø Hansen
 
-#include <QtGui/QGuiApplication>
-#include <QQuickView>
-#include <QQmlContext>
-#include "qt/ApplicationContext.h"
-#include "qt/KeyboardEventFilter.h"
+#include "Window.h"
+#include "stdafx.h"
+#include <commctrl.h>
 
-int main(int argc, char* argv[])
+#pragma comment(lib, "Setupapi.lib")
+#pragma comment(lib, "Bthprops.lib")
+#pragma comment(lib, "ComCtl32.lib")
+#pragma comment(lib, "Shell32.lib")
+#pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
+int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
+                       _In_opt_ HINSTANCE,
+                       _In_ LPTSTR    lpCmdLine,
+                       _In_ int       nCmdShow)
 {
-    QGuiApplication app(argc, argv);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(nCmdShow);
 
-    QQuickView viewer;
-    KeyboardEventFilter reloadQml(viewer, QString("C:/Users/Jesper/Code/WinK760/res/qml/window/main.qml"), &viewer);
-    ApplicationContext appContext(&app);
-    app.installEventFilter(&reloadQml);
-    viewer.rootContext()->setContextProperty("appContext", &appContext);
-    viewer.setSource(QStringLiteral("qrc:/qml/window/main.qml"));
-    viewer.show();
+    InitCommonControls();
 
-    return app.exec();
+    Window window;
+    window.Register(hInstance);
+
+    if (!window.Initialize(hInstance, &window))
+    {
+        return 0;
+    }
+
+    RAWINPUTDEVICE device;
+    device.usUsagePage = 0x00C;
+    device.usUsage = 0x0001;
+    device.dwFlags = RIDEV_INPUTSINK;
+    device.hwndTarget = window.GetHWND();
+    RegisterRawInputDevices(&device, 1, sizeof(RAWINPUTDEVICE));
+
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return (int) msg.wParam;
 }
+

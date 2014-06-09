@@ -1,10 +1,8 @@
-#pragma comment(lib, "Setupapi.lib")
-
 #include "hid.h"
 #include <Windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "../hidapi/hidapi.h"
+#include "hidapi.h"
 
 #define LOGITECH_K760_VENDOR_ID                 0x046d
 #define LOGITECH_K760_PRODUCT_ID                0xb318
@@ -38,8 +36,11 @@ bool init()
 
 	char* path_to_open = 0;
 	while (cur_dev) {
-		if (cur_dev->interface_number == 3) /*cur_dev->usage_page == 0xff00 && cur_dev->usage == 0x0002)*/
+		if (cur_dev->usage_page == 0xff00 && cur_dev->usage == 0x0002)
+        {
 			path_to_open = cur_dev->path;
+            break;
+        }
 
 		cur_dev = cur_dev->next;
 	}
@@ -51,21 +52,7 @@ bool init()
 	handle = hid_open_path(path_to_open);
 	hid_free_enumeration(devs);
 
-    if (hid_set_nonblocking(handle, 1))
-        return false;
-
     return true;
-}
-
-void print_buf(char* header, UINT8 *buf)
-{
-#ifdef _DEBUG
-    printf("%s", header);
-    printf("%s", "\n");
-    for (int i = 0; i < HIDPP_RESPONSE_LONG_LENGTH; i++)
-        printf("0x%02x ", buf[i]);
-    printf("%s", "\n");
-#endif
 }
 
 int write_device_cmd(hid_device* device,
@@ -89,7 +76,6 @@ int write_device_cmd(hid_device* device,
         return ERROR_RETURN_VAL;
 
     /* try to read response from hid device */
-    DWORD start = GetTickCount();
     if (hid_read_timeout(device, response, HIDPP_RESPONSE_LONG_LENGTH, HIDPP_TIMEOUT) != HIDPP_RESPONSE_LONG_LENGTH)
         return ERROR_RETURN_VAL;
 
@@ -120,25 +106,6 @@ bool pingKeyboard(void)
     return !(res || buf[4] != 2 || buf[6] != ping);
 }
 
-bool getChargeInformation(int& charge)
-{
-    if (!init())
-        return false;
-
-    UINT8 buf[HIDPP_RESPONSE_LONG_LENGTH];
-    int res;
-    buf[0] = 0x3;
-    res = hid_get_feature_report(handle, buf, HIDPP_RESPONSE_LONG_LENGTH);
-    /*while (true)
-    {
-        res = hid_read(handle, buf, HIDPP_RESPONSE_LONG_LENGTH);
-        if (res != 0)
-            break;
-    }*/
-    charge = buf[1];
-    return res != -1;
-}
-
 bool setFunctionKeyStatus(bool status)
 {
     if (!init())
@@ -163,6 +130,8 @@ bool setFunctionKeyStatus(bool status)
         HIDPP_FEATURE_STATUS_SET, 
         status ? HIDPP_FEATURE_STATUS_ON : HIDPP_FEATURE_STATUS_OFF,
         0, 0, buf);
+
+    finalize();
 
 	return !res;
 }

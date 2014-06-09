@@ -1,0 +1,5 @@
+set(Resources 
+	"${CMAKE_CURRENT_SOURCE_DIR}/resource.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/icon.ico" 
+	"${CMAKE_CURRENT_SOURCE_DIR}/WinK760.rc"
+	PARENT_SCOPE)
