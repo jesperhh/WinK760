@@ -5,6 +5,7 @@ set(Headers
 	"${CMAKE_CURRENT_SOURCE_DIR}/Window.h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/worker.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/mingw-unicode-gui.h"
 	PARENT_SCOPE)
 	
 set(Sources 

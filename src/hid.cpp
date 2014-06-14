@@ -1,7 +1,5 @@
+#include "stdafx.h"
 #include "hid.h"
-#include <Windows.h>
-#include <stdio.h>
-#include <tchar.h>
 #include "hidapi.h"
 
 #define LOGITECH_K760_VENDOR_ID                 0x046d

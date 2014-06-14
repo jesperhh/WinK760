@@ -1,8 +1,5 @@
 #pragma once
 
-#include <windows.h>
-#include <memory>
-
 class NotifyIcon;
 class BluetoothMonitor;
 class Worker;
@@ -25,17 +22,20 @@ public:
 
 private:
     HWND hwnd;
-    HINSTANCE hInstance;
     HMENU contextMenu;
     HICON icon;
     RECT windowRect;
+    TCHAR aboutText[100];
 
-    std::unique_ptr<NotifyIcon> notifyIcon;
     std::unique_ptr<BluetoothMonitor> monitor;
+    std::unique_ptr<NotifyIcon> notifyIcon;
     std::unique_ptr<Worker> worker;
 
     void OnPaint(HWND hWnd);
     LRESULT OnDeviceChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     LRESULT CALLBACK OnNotifyIcon(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+    Window(const Window&);
+    Window& operator=(const Window&);
 };
 

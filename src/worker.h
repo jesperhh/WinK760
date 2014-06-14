@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 class Worker
 {
 public:

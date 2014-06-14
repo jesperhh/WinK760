@@ -1,13 +1,11 @@
-#include "Window.h"
-#include <utility>
-#include <tchar.h>
+#include "stdafx.h"
+#include "window.h"
 #include "notifyicon.h"
 #include "bluetooth.h"
 #include "res/resource.h"
 #include "worker.h"
-#include <memory>
 
-Window::Window(void): hwnd(nullptr), monitor(), notifyIcon(), contextMenu(nullptr), icon(nullptr)
+Window::Window(void): hwnd(nullptr), contextMenu(nullptr), icon(nullptr), monitor(), notifyIcon()
 {
     contextMenu = CreatePopupMenu();
     AppendMenu(contextMenu, MF_STRING, ID_TRAY_CONTEXT_SHOW, _T("Restore"));
@@ -21,7 +19,6 @@ Window::~Window(void)
 
 LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    int wmId, wmEvent;
     switch (message)
     {
     case WM_SYSCOMMAND:
@@ -108,8 +105,6 @@ ATOM Window::Register(HINSTANCE hInstance)
 
 bool Window::Initialize(HINSTANCE hInstance, Window* window)
 {
-    this->hInstance = hInstance;
-
     DWORD style = WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN |WS_CLIPSIBLINGS;
     DWORD exStyle = WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE;
 
@@ -131,7 +126,17 @@ bool Window::Initialize(HINSTANCE hInstance, Window* window)
         return false;
     }
 
+    // Register that we want raw input for usage page 0x000C/0x0001 - here
+    // the "eject" key sends its input
+    RAWINPUTDEVICE device;
+    device.usUsagePage = 0x000C;
+    device.usUsage = 0x0001;
+    device.dwFlags = RIDEV_INPUTSINK;
+    device.hwndTarget = hWnd;
+    RegisterRawInputDevices(&device, 1, sizeof(RAWINPUTDEVICE));
+
     this->icon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 256, 256, LR_DEFAULTCOLOR));
+    LoadString(hInstance, IDS_ABOUT, aboutText, sizeof(aboutText)/sizeof(aboutText[0]));
 
     notifyIcon.reset(new NotifyIcon(hInstance, hwnd));
     monitor.reset(new BluetoothMonitor("Logitech K760", hwnd));
@@ -154,7 +159,7 @@ void Window::OnPaint(HWND hWnd)
     rect.bottom = windowRect.bottom;
     rect.right = windowRect.right;
 
-    DrawText(hdc, _T("WinK760\n\nCopyright Jesper Hellesø Hansen 2013-2014"),  -1, &rect, DT_CENTER | DT_TOP);
+    DrawText(hdc, aboutText,  -1, &rect, DT_CENTER | DT_TOP);
     SelectObject(hdc, font);
     EndPaint(hWnd, &ps);
 }
@@ -162,26 +167,20 @@ void Window::OnPaint(HWND hWnd)
 LRESULT CALLBACK Window::OnNotifyIcon(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     WORD event = LOWORD(lParam);
-    POINT cursorPoint;
-    UINT clicked;
+    POINT cursorPosition;
+    BOOL clicked;
 
     switch (event)
     {
     case WM_LBUTTONUP:
         ShowWindow(hWnd, SW_SHOW);
         break;
-    case WM_RBUTTONUP:   
-        GetCursorPos( &cursorPoint );
+    case WM_RBUTTONUP:
+        GetCursorPos(&cursorPosition);
         SetForegroundWindow(hwnd); 
-        clicked = TrackPopupMenu(
-            contextMenu,
-            TPM_RETURNCMD | TPM_NONOTIFY,
-            cursorPoint.x,
-            cursorPoint.y,
-            0,
-            hwnd,
-            NULL
-            );
+        clicked = TrackPopupMenu(contextMenu, TPM_RETURNCMD | TPM_NONOTIFY,
+            cursorPosition.x, cursorPosition.y, 0, hwnd, NULL);
+
         if (clicked == ID_TRAY_CONTEXT_EXIT)
         {
             DestroyWindow(hwnd);
@@ -200,6 +199,7 @@ LRESULT CALLBACK Window::OnNotifyIcon(HWND hWnd, UINT message, WPARAM wParam, LP
 
 LRESULT Window::OnDeviceChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    // Verify if WM_DEVICE_CHANGE was a bluetooth connect/disconnect message
     BTH_RADIO_IN_RANGE* radio_in_range = monitor->TranslateMessage(message, wParam, lParam);
     if (radio_in_range)
     {
@@ -219,23 +219,24 @@ LRESULT Window::OnDeviceChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 LRESULT CALLBACK Window::OnRawInput(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    UINT dwSize;
+    // Determine size of raw input data
+    UINT dwSize = 0;
     GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
 
+    // Allocate enough room for input data and read it
     std::unique_ptr<BYTE[]> lpb(new BYTE[dwSize]);
-    if (lpb == nullptr) 
-    {
-        return 0;
-    } 
-
     GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb.get(), &dwSize, sizeof(RAWINPUTHEADER));
 
-    RAWHID* rawhid = &((RAWINPUT*)lpb.get())->data.hid;
-    uint32_t* report = (uint32_t*)(rawhid->bRawData);
+    // Get actual HID report
+    RAWINPUT* rawinput = reinterpret_cast<RAWINPUT*>(lpb.get());
+    RAWHID* rawhid = &(rawinput)->data.hid;
+    uint32_t* report = reinterpret_cast<uint32_t*>(rawhid->bRawData);
+
     if (rawhid->dwSizeHid == 4)
     {
-        UINT scanCode = MapVirtualKey(VK_F13, MAPVK_VK_TO_VSC);
-        for (int p = 0; p<rawhid->dwCount; p++)
+        // We may receive more than one report from each VM_INPUT, loop  through them
+        BYTE scanCode = static_cast<BYTE>(MapVirtualKey(VK_F13, MAPVK_VK_TO_VSC));
+        for (unsigned int p = 0; p<rawhid->dwCount; p++)
         {
             // Eject down
             if (0x00200002 ==  *report)

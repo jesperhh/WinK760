@@ -1,5 +1,5 @@
+#include "stdafx.h"
 #include "worker.h"
-#include <process.h>
 #include "hid.h"
 
 Worker::Worker()
@@ -24,10 +24,12 @@ DWORD WINAPI Worker::ThreadProc(_In_  LPVOID lpParameter)
 
 DWORD Worker::doWork(void)
 {
-    HANDLE handels[] = {doWorkEvent, exitThreadEvent};
+    HANDLE handles[] = {doWorkEvent, exitThreadEvent};
+
+    // Infinite loop that does not generate warnings
     for (;;)
     {
-        DWORD waitResult = WaitForMultipleObjects(2, handels, false, INFINITE);
+        DWORD waitResult = WaitForMultipleObjects(2, handles, false, INFINITE);
         switch (waitResult)
         {
             // Do work
