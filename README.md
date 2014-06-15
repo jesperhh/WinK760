@@ -7,11 +7,10 @@ WinK760 is inspired by Solaar and UPower and makes use of HID API with some mino
 
 Building
 --------
-Build using CMake. Tested using MinGW (GCC 4.8.1) and Visual Studio 2012.
+Build using CMake. Tested using MinGW-W64 (GCC 4.9) and Visual Studio 2012.
 
 Todo
 ----
-* Change application into systray application that monitors the state of the keyboard
-* Enable battery status monitoring
+* Enable battery status monitoring (if possible)
 
-Copyright 2013 Jesper Hellesø Hansen
+Copyright 2013-2014 Jesper Hellesø Hansen
