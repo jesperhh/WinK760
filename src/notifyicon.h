@@ -10,4 +10,6 @@ public:
 
 private:
     NOTIFYICONDATA notifyIconData;
+
+    DISALLOW_COPY_AND_ASSIGN(NotifyIcon);
 };

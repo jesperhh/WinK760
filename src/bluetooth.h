@@ -10,4 +10,6 @@ public:
 private:
     CHAR deviceName[BTH_MAX_NAME_SIZE];
     HDEVNOTIFY notify[MAX_RADIOS];
+
+    DISALLOW_COPY_AND_ASSIGN(BluetoothMonitor);
 };

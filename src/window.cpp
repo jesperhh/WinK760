@@ -2,6 +2,7 @@
 #include "window.h"
 #include "notifyicon.h"
 #include "bluetooth.h"
+#include "ejectkey.h"
 #include "res/resource.h"
 #include "worker.h"
 
@@ -41,7 +42,7 @@ LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
     case WM_DEVICECHANGE:
         return OnDeviceChange(hWnd, message, wParam, lParam);
     case WM_INPUT:
-        return OnRawInput(hWnd, message, wParam, lParam);
+        return ejectKey->OnRawInput(hWnd, message, wParam, lParam);
     case WM_PAINT:
         OnPaint(hWnd);
         break;
@@ -126,21 +127,13 @@ bool Window::Initialize(HINSTANCE hInstance, Window* window)
         return false;
     }
 
-    // Register that we want raw input for usage page 0x000C/0x0001 - here
-    // the "eject" key sends its input
-    RAWINPUTDEVICE device;
-    device.usUsagePage = 0x000C;
-    device.usUsage = 0x0001;
-    device.dwFlags = RIDEV_INPUTSINK;
-    device.hwndTarget = hWnd;
-    RegisterRawInputDevices(&device, 1, sizeof(RAWINPUTDEVICE));
-
     this->icon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 256, 256, LR_DEFAULTCOLOR));
     LoadString(hInstance, IDS_ABOUT, aboutText, sizeof(aboutText)/sizeof(aboutText[0]));
 
     notifyIcon.reset(new NotifyIcon(hInstance, hwnd));
     monitor.reset(new BluetoothMonitor("Logitech K760", hwnd));
     worker.reset(new Worker());
+    ejectKey.reset(new EjectKey(hwnd));
     return true;
 }
 
@@ -211,44 +204,6 @@ LRESULT Window::OnDeviceChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
         else
         {
             notifyIcon->Balloon(_T("Disconnected"));
-        }
-    }
-
-    return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
-LRESULT CALLBACK Window::OnRawInput(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    // Determine size of raw input data
-    UINT dwSize = 0;
-    GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
-
-    // Allocate enough room for input data and read it
-    std::unique_ptr<BYTE[]> lpb(new BYTE[dwSize]);
-    GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb.get(), &dwSize, sizeof(RAWINPUTHEADER));
-
-    // Get actual HID report
-    RAWINPUT* rawinput = reinterpret_cast<RAWINPUT*>(lpb.get());
-    RAWHID* rawhid = &(rawinput)->data.hid;
-    uint32_t* report = reinterpret_cast<uint32_t*>(rawhid->bRawData);
-
-    if (rawhid->dwSizeHid == 4)
-    {
-        // We may receive more than one report from each VM_INPUT, loop  through them
-        BYTE scanCode = static_cast<BYTE>(MapVirtualKey(VK_F13, MAPVK_VK_TO_VSC));
-        for (unsigned int p = 0; p<rawhid->dwCount; p++)
-        {
-            // Eject down
-            if (0x00200002 ==  *report)
-            {
-                keybd_event(VK_F13, scanCode, 0, 0);
-            }
-            // Eject up
-            else if (0x00000002 == *report)
-            {
-                keybd_event(VK_F13, scanCode, KEYEVENTF_KEYUP, 0);
-            }
-            report++;
         }
     }
 
