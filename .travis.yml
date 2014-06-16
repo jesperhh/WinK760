@@ -2,11 +2,11 @@ language: cpp
 
 compiler:
   - gcc
+
 before_install:
   - sh -c "sudo apt-get install -qq build-essential curl libarchive-dev libexpat1-dev zlib1g-dev libcurl4-openssl-dev mingw-w64 gcc-mingw-w64-i686 g++-mingw-w64-i686 binutils-mingw-w64-i686 mingw-w64-dev"
-  - sh -c "curl -O http://www.cmake.org/files/v2.8/cmake-2.8.11.tar.gz; tar -xzvf cmake-2.8.11.tar.gz; cd cmake-2.8.11; ./bootstrap --prefix=/usr --system-libs --mandir=/share/man --docdir=/share/doc/cmake-2.8.11; make; sudo make install"
+  - sh -c "curl -O http://www.cmake.org/files/v2.8/cmake-2.8.11.tar.gz; tar -xzf cmake-2.8.11.tar.gz; cd cmake-2.8.11; ./bootstrap --prefix=/usr --system-libs --mandir=/share/man --docdir=/share/doc/cmake-2.8.11; make; sudo make install"
   - sh -c "curl -O http://sourceforge.net/apps/trac/mingw-w64/export/5602/trunk/mingw-w64-headers/include/sal.h; sudo mv sal.h /usr/i686-w64-mingw32/include/"
-  - sh -c ""
 
 before_script:
   - mkdir build
