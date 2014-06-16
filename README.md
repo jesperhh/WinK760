@@ -1,5 +1,6 @@
 WinK760
 =======
+[![Build Status](https://travis-ci.org/jesperhh/WinK760.svg?branch=master)](https://travis-ci.org/jesperhh/WinK760)
 
 WinK760: A utility for enabling Fn-key inversion for the Logitech K760 keyboard on Windows.
 
