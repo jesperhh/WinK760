@@ -24,6 +24,10 @@ struct timer_params
     DWORD delay;
 };
 
+#ifndef MAPVK_VSC_TO_VK
+    #define MAPVK_VSC_TO_VK 1
+#endif
+
 void SendKeyPress(timer_params* params, bool keyUp);
 
 static timer_params timer_param;

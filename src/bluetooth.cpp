@@ -3,7 +3,7 @@
 
 BluetoothMonitor::BluetoothMonitor(const char* _deviceName, const HWND hwnd)
 {
-    strncpy_s(this->deviceName, BTH_MAX_NAME_SIZE, _deviceName, strlen(_deviceName));
+    strcpy(this->deviceName, _deviceName);
 
     BLUETOOTH_FIND_RADIO_PARAMS find_radios_params = { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
     HANDLE handle;

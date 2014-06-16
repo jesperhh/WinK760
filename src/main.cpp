@@ -3,7 +3,7 @@
 //
 // WinK760 is inspired by the Solaar and UPower libraries.
 //
-// Copyright 2013-2014 Jesper Hellesø Hansen
+// Copyright 2013-2014 Jesper Hellesoe Hansen
 
 #include "stdafx.h"
 #include "window.h"

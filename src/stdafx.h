@@ -1,7 +1,8 @@
 #pragma once
 
 #include <sal.h>
-#include <SDKDDKVer.h>
+#include <cstdint>
+#include <sdkddkver.h>
 #include <windows.h>
 #include <tchar.h>
 #include <memory>
@@ -12,9 +13,9 @@
 #include <utility>
 #include <process.h>
 #include <commctrl.h>
-#include <Dbt.h>
-#include <BluetoothAPIs.h>
-#include <Setupapi.h>
+#include <dbt.h>
+#include <bluetoothapis.h>
+#include <setupapi.h>
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
     TypeName(const TypeName&);   \
