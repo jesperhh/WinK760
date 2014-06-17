@@ -19,7 +19,7 @@ deploy:
   provider: releases
   api-key: 
     secure: "mucoud1wyAb6wMnL9i48eionGF8DIxyrUvbv31ong4NbD2i3zgex8WHS+0H8oP/TriKYheoJUMyBsJLat8Sn4BxT03ocUcxsNzWPHz8SukadzSExm+LytKAeWB47JM/qvw/mw10PNnHiRPqvLkl7bof1JifVr9Dc2fudDRWUvPk="
-  file: build/WinK760.exe
+  file: WinK760.exe
   skip_cleanup: true
   on:
     tags: true
