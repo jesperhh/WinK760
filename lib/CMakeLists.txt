@@ -1,5 +1,5 @@
 add_library(hidapi
-	STATIC
+    STATIC
     hidapi/hidapi/hidapi.h
     hidapi/windows/hid.c
 )
