@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdio>
+#include <cwchar>
 #include <cstdint>
 #include <sdkddkver.h>
 #include <windows.h>
@@ -8,7 +9,7 @@
 #include <memory>
 #include <shellapi.h>
 #include <bthdef.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <utility>
 #include <process.h>
 #include <commctrl.h>
