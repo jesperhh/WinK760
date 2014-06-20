@@ -11,7 +11,7 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake -DCMAKE_TOOLCHAIN_FILE=../toolchain-cross-mingw32-linux.cmake ..
+  - cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-cross-mingw32-linux.cmake ..
 
 script: make
 
