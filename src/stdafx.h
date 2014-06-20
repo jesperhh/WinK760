@@ -1,12 +1,11 @@
 #pragma once
 
-#include <sal.h>
+#include <cstdio>
 #include <cstdint>
 #include <sdkddkver.h>
 #include <windows.h>
 #include <tchar.h>
 #include <memory>
-#include <cstdio>
 #include <shellapi.h>
 #include <bthdef.h>
 #include <stdlib.h>
@@ -16,6 +15,7 @@
 #include <dbt.h>
 #include <bluetoothapis.h>
 #include <setupapi.h>
+#include <sal.h>
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
     TypeName(const TypeName&);   \
