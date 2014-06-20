@@ -10,8 +10,6 @@ enum _LI_METRIC
 };
 #endif // !LIM_SMALL
 
-
-
 NotifyIcon::NotifyIcon(HINSTANCE hInstance, HWND hWnd)
 {
     ZeroMemory(&this->notifyIconData, sizeof(NOTIFYICONDATA));
@@ -29,8 +27,8 @@ NotifyIcon::NotifyIcon(HINSTANCE hInstance, HWND hWnd)
     notifyIconData.uVersion = NOTIFYICON_VERSION;
     notifyIconData.dwInfoFlags = NIIF_INFO;
 
-    _stprintf(notifyIconData.szTip, _T("WinK760"));
-    _stprintf(notifyIconData.szInfoTitle, _T("WinK760"));
+    std::swprintf(notifyIconData.szTip, 128, _T("WinK760"));
+    std::swprintf(notifyIconData.szInfoTitle, 64, _T("WinK760"));
 
     Shell_NotifyIcon(NIM_ADD, &notifyIconData);
 }
@@ -44,6 +42,6 @@ NotifyIcon::~NotifyIcon(void)
 void NotifyIcon::Balloon(const TCHAR* info)
 {
     notifyIconData.uFlags |= NIF_INFO;
-    _stprintf(notifyIconData.szInfo, info);
+    std::swprintf(notifyIconData.szInfo, 256, info);
     Shell_NotifyIcon(NIM_MODIFY, &notifyIconData);
 }

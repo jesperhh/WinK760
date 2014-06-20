@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <tchar.h>
 #include <memory>
-#include <stdio.h>
+#include <cstdio>
 #include <shellapi.h>
 #include <bthdef.h>
 #include <stdlib.h>
