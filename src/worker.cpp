@@ -34,8 +34,17 @@ DWORD Worker::doWork(void)
         {
             // Do work
             case WAIT_OBJECT_0 + 0:
-                setFunctionKeyStatus(true);
+            {
+                bool success = setFunctionKeyStatus(true);
+                // Retry once, as this function is often called before device is
+                // ready to receive commands
+                if (!success)
+                {
+                    Sleep(500);
+                    (void)setFunctionKeyStatus(true);
+                }
                 break;
+            }
             // Exit thread
             case WAIT_OBJECT_0 + 1:
                 return 0;
