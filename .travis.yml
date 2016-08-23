@@ -18,7 +18,7 @@ script: make
 deploy:
   provider: releases
   api-key: 
-    secure: "GGtmz5ZtMmYFPFynNGTlQRMYb8yPDIDUZTckNh+BQFHm7zcAonTb/CkMI/idhOrJQ/FAOb0nMcy3y3d0WA/EhG+Dl/D7cbhWPE7o9nwXGPo5/E/fNzltqKQlkd+r2cCiSlHuZLE2A3n2hNrJcvRbxEuHSXmj5bQE9kNvU3c8Yik="
+    secure: "Ubckcfneik/5iqSgFr02OA87V3lC59Qmt1XRGTdXl3w32dK17oxxpEE5I4LBuqY+u2+CID77NYRE11wdOJH4l1I0BEko87nYTHdz9RJeM8YGUi8li45LB9XdBvVPZpFiU+103z9aYU9eyjTyeCAe36MX57hrT4hIkHOHfpbFCNE="
   file: WinK760.exe
   skip_cleanup: true
   on:
