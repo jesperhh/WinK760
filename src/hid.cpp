@@ -4,6 +4,7 @@
 
 #define LOGITECH_K760_VENDOR_ID                 0x046d
 #define LOGITECH_K760_PRODUCT_ID                0xb318
+#define LOGITECH_K760_PRODUCT_ID_ALT            0xb316
 #define HIDPP_RESPONSE_LONG_LENGTH				20
 #define HIDPP_DEVICE_BLUETOOTH					0xFF
 #define HIDPP_HEADER_REQUEST					0x11
@@ -29,12 +30,13 @@ bool init()
 
     /* Enumerate HID device */
     struct hid_device_info *devs, *cur_dev;
-	devs = hid_enumerate(LOGITECH_K760_VENDOR_ID, LOGITECH_K760_PRODUCT_ID);
+	devs = hid_enumerate(LOGITECH_K760_VENDOR_ID, 0x0000);
 	cur_dev = devs;	
 
 	char* path_to_open = 0;
 	while (cur_dev) {
-		if (cur_dev->usage_page == 0xff00 && cur_dev->usage == 0x0002)
+		if ((cur_dev->product_id == LOGITECH_K760_PRODUCT_ID || cur_dev->product_id == LOGITECH_K760_PRODUCT_ID_ALT) &&
+			cur_dev->usage_page == 0xff00 && cur_dev->usage == 0x0002)
         {
 			path_to_open = cur_dev->path;
             break;
