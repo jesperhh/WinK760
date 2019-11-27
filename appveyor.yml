@@ -5,14 +5,14 @@ platform:
 image: Visual Studio 2019
 configuration: Release
 init:
-- if "%PLATFORM%"=="x86" ( set generator="Visual Studio 16 2019" )
-- if "%PLATFORM%"=="x64" ( set generator="Visual Studio 16 2019 Win64" )
-- echo %generator%
+- if "%PLATFORM%"=="x64" ( set arch="x64" )
+- if "%PLATFORM%"=="x86" ( set arch="Win32" )
+- echo %arch%
 install:
 - git submodule update --init --recursive
 before_build:
 - cmd: |-
-    cmake ./ -G %generator%
+    cmake ./ -G "Visual Studio 16 2019" -A %arch%
 build:
   project: WinK760.sln
   parallel: true
