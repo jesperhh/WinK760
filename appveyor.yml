@@ -18,7 +18,7 @@ build:
   parallel: true
   verbosity: normal
 after_build:
-- cmd: 7z a WinK760-$(platform).zip %APPVEYOR_BUILD_FOLDER%\Release\WinK760.exe
+- cmd: 7z a WinK760-%PLATFORM%.zip %APPVEYOR_BUILD_FOLDER%\Release\WinK760.exe
 artifacts:
 - path: WinK760-$(platform).zip
   name: WinK760-$(platform)
