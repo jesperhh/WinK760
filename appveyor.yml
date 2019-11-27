@@ -10,7 +10,8 @@ init:
 - echo %generator%
 
 before_build:
-- cmd: '"C:\Program Files (x86)\CMake\bin\cmake" ./ -G "%generator%"'
+- cmd: |-
+    cmake ./ -G %generator%
 build:
   project: WinK760.sln
   parallel: true
