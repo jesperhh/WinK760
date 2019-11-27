@@ -5,11 +5,11 @@ platform:
 image: Visual Studio 2019
 configuration: Release
 init:
-- git submodule update --init --recursive
 - if "%PLATFORM%"=="x86" ( set generator="Visual Studio 16 2019" )
 - if "%PLATFORM%"=="x64" ( set generator="Visual Studio 16 2019 Win64" )
 - echo %generator%
-
+install:
+- git submodule update --init --recursive
 before_build:
 - cmd: |-
     cmake ./ -G %generator%
