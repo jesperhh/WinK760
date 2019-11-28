@@ -1,0 +1,31 @@
+version: 1.0.{build}
+platform: 
+- x64
+- Win32
+image: Visual Studio 2019
+configuration: Release
+install:
+- git submodule update --init --recursive
+before_build:
+- cmd: |-
+    cmake ./ -G "Visual Studio 16 2019" -A %PLATFORM%
+build:
+  project: WinK760.sln
+  parallel: true
+  verbosity: normal
+after_build:
+- cmd: 7z a WinK760-%PLATFORM%.zip %APPVEYOR_BUILD_FOLDER%\Release\WinK760.exe
+artifacts:
+- path: WinK760-$(platform).zip
+  name: WinK760-$(platform)
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: a/eMX85I7Kw+Mk4vfjfg5pN+jMqjfq4hXr3/JxIDeqcp+s+3iWV+r/TwUVQRSxAj
+  artifact: WinK760-$(platform)
+  on:
+    branch: master
+    APPVEYOR_REPO_TAG: true
+branches:
+  only:
+  - master
