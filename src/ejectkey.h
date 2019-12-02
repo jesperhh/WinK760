@@ -11,6 +11,8 @@ private:
 
     void GetRemappedScanCode(BYTE &extendedScanCode, BYTE &scanCode);
 
+    void HandleRawInput(const LPARAM &lParam, const HWND &hWnd);
+
     EjectKey(EjectKey const &) = delete;
     void operator=(EjectKey const &ejectKey) = delete;
 };

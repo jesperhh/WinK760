@@ -82,28 +82,35 @@ EjectKey::~EjectKey(void)
     KillTimer(this->hwnd, reinterpret_cast<UINT_PTR>(&timer_param));
 }
 
-LRESULT CALLBACK EjectKey::OnRawInput(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+void EjectKey::HandleRawInput(const LPARAM &lParam, const HWND &hWnd)
 {
+
+
     // Determine size of raw input data
     UINT dwSize = 0;
-    GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+    if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == (UINT)-1 || !dwSize)
+        return;
 
     // Allocate enough room for input data and read it
     std::unique_ptr<BYTE[]> lpb(new BYTE[dwSize]);
-    GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb.get(), &dwSize, sizeof(RAWINPUTHEADER));
+    if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb.get(), &dwSize, sizeof(RAWINPUTHEADER)) == (UINT)-1 || !dwSize)
+        return;
 
     // Get actual HID report
     RAWINPUT* rawinput = reinterpret_cast<RAWINPUT*>(lpb.get());
     RAWHID* rawhid = &(rawinput)->data.hid;
+    if (!rawhid)
+        return;
+
     uint32_t* report = reinterpret_cast<uint32_t*>(rawhid->bRawData);
 
-    if (rawhid->dwSizeHid == 4)
+    if (rawhid->dwSizeHid == 4 && report)
     {
         // We may receive more than one report from each VM_INPUT, loop  through them
         for (unsigned int p = 0; p<rawhid->dwCount; p++)
         {
             // Eject down
-            if (0x00200002 ==  *report)
+            if (0x00200002 == *report)
             {
                 SendKeyPress(&timer_param, false);
                 SetTimer(hWnd, reinterpret_cast<UINT_PTR>(&timer_param), timer_param.delay, TimerProc);
@@ -118,6 +125,11 @@ LRESULT CALLBACK EjectKey::OnRawInput(HWND hWnd, UINT message, WPARAM wParam, LP
             report++;
         }
     }
+}
+
+LRESULT CALLBACK EjectKey::OnRawInput(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    HandleRawInput(lParam, hWnd);
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
