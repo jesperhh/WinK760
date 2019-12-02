@@ -51,7 +51,7 @@ EjectKey::EjectKey(HWND hWnd)
 
     // Register that we want raw input for usage page 0x000C/0x0001 - here
     // the "eject" key sends its input
-    RAWINPUTDEVICE device;
+    RAWINPUTDEVICE device = { 0 };
     device.usUsagePage = 0x000C;
     device.usUsage = 0x0001;
     device.dwFlags = RIDEV_INPUTSINK;
@@ -150,8 +150,7 @@ void EjectKey::GetRemappedScanCode(BYTE &extendedScanCode, BYTE &scanCode)
 
 void SendKeyPress(timer_params* params, bool keyUp)
 {
-    INPUT input;
-    ZeroMemory(&input, sizeof(input));
+    INPUT input = { 0 };
 
     input.type = INPUT_KEYBOARD;
     input.ki.wVk = params->virtualKey;
