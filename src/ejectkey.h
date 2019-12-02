@@ -11,5 +11,6 @@ private:
 
     void GetRemappedScanCode(BYTE &extendedScanCode, BYTE &scanCode);
 
-    DISALLOW_COPY_AND_ASSIGN(EjectKey);
+    EjectKey(EjectKey const &) = delete;
+    void operator=(EjectKey const &ejectKey) = delete;
 };

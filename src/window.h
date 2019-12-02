@@ -33,6 +33,7 @@ private:
     static LRESULT CALLBACK StaticWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
     LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 
-    DISALLOW_COPY_AND_ASSIGN(Window);
+    Window(Window const &) = delete;
+    void operator=(Window const &window) = delete;
 };
 

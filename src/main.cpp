@@ -7,7 +7,6 @@
 
 #include "stdafx.h"
 #include "window.h"
-#include "mingw-unicode-gui.h"
 
 #ifdef _MSC_VER
 #pragma comment(lib, "Setupapi.lib")

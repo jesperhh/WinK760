@@ -17,7 +17,3 @@
 #include <dbt.h>
 #include <bluetoothapis.h>
 #include <setupapi.h>
-
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-    TypeName(const TypeName&);   \
-    void operator=(const TypeName&)
