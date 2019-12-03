@@ -8,10 +8,10 @@ WinK760 is inspired by Solaar and UPower and makes use of HID API.
 
 Building
 --------
-Build using CMake. Tested using MinGW-W64 (GCC 4.9) and Visual Studio 2012.
+Build using CMake. Tested using Visual Studio 2017.
 
 Todo
 ----
 * Enable battery status monitoring (if possible)
 
-Copyright 2013-2014 Jesper Hellesø Hansen
+Copyright 2013-2019 Jesper Hellesø Hansen

@@ -20,13 +20,11 @@
 
 #define ERROR_RETURN_VAL                        -1
 
-static hid_device *handle = nullptr;
-
-bool init()
+hid_device* init()
 {
     /* Initialize HIDAPI */
     if (hid_init() != 0)
-        return false;
+        return nullptr;
 
     /* Enumerate HID device */
     struct hid_device_info *devs, *cur_dev;
@@ -46,20 +44,15 @@ bool init()
     }
 
     /* Open HID device */
+    hid_device* handle = nullptr;
     if (path_to_open != nullptr)
     {
-        if (handle)
-        {
-            hid_close(handle);
-            handle = nullptr;
-        }
-
         handle = hid_open_path(path_to_open);
     }
 
     hid_free_enumeration(devs);
 
-    return handle != nullptr;
+    return handle;
 }
 
 int write_device_cmd(hid_device* device,
@@ -88,13 +81,12 @@ int write_device_cmd(hid_device* device,
     return 0;
 }
 
-void finalize(void)
+void finalize(hid_device* handle)
 {
     /* Close hid handle (if it exists) and finalize hidapi library */
     if (handle)
     {
         hid_close(handle);
-        handle = nullptr;
     }
 
     hid_exit();
@@ -102,7 +94,8 @@ void finalize(void)
 
 bool setFunctionKeyStatus(bool status)
 {
-    if (!init())
+    hid_device* handle = init();
+    if (!handle)
         return false;
 
     /* Get feature index */
@@ -125,7 +118,7 @@ bool setFunctionKeyStatus(bool status)
         status ? HIDPP_FEATURE_STATUS_ON : HIDPP_FEATURE_STATUS_OFF,
         0, 0, buf);
 
-    finalize();
+    finalize(handle);
 
     return !res;
 }
