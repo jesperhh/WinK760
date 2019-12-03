@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "bluetooth.h"
 
-BluetoothMonitor::BluetoothMonitor(const char* _deviceName, const HWND hwnd)
+BluetoothMonitor::BluetoothMonitor(const std::string& deviceName, const HWND hwnd)
 {
-    strcpy(this->deviceName, _deviceName);
+    m_deviceName = deviceName;
+    m_notificationHandles.clear();
 
     BLUETOOTH_FIND_RADIO_PARAMS find_radios_params = { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
     HANDLE handle;
@@ -13,59 +14,57 @@ BluetoothMonitor::BluetoothMonitor(const char* _deviceName, const HWND hwnd)
         return;
     }
 
-    ZeroMemory(notify, sizeof(notify));
-
-    DEV_BROADCAST_HANDLE dbh;
-    ZeroMemory(&dbh, sizeof(dbh));
+    DEV_BROADCAST_HANDLE dbh = { 0 };
     dbh.dbch_devicetype = DBT_DEVTYP_HANDLE;
     dbh.dbch_size = sizeof(dbh);
     dbh.dbch_eventguid = GUID_BLUETOOTH_RADIO_IN_RANGE;
 
-    int current_radio = 0;
-    for (;;)
+    do
     {   
         dbh.dbch_handle = handle;
-        notify[current_radio++] = RegisterDeviceNotification(hwnd, &dbh, DEVICE_NOTIFY_WINDOW_HANDLE);
+        HDEVNOTIFY notify = RegisterDeviceNotification(hwnd, &dbh, DEVICE_NOTIFY_WINDOW_HANDLE);
         CloseHandle(handle);
 
-        if (!BluetoothFindNextRadio(radios_find, &handle))
-            break;
-    }
+        if (notify)
+        {
+            m_notificationHandles.push_back(notify);
+        }
+    } 
+    while (BluetoothFindNextRadio(radios_find, &handle));
 
     BluetoothFindRadioClose(radios_find);
 }
 
 BluetoothMonitor::~BluetoothMonitor(void)
 {
-    for (int i = 0; i<MAX_RADIOS; i++)
+    for (HDEVNOTIFY notify : m_notificationHandles)
     {
-        if (notify[i])
-        {
-            UnregisterDeviceNotification(notify[i]);
-        }
-        else
-        {
-            break;
-        }
+        UnregisterDeviceNotification(notify);
     }
 }
 
-BTH_RADIO_IN_RANGE* BluetoothMonitor::TranslateMessage(const UINT message, const WPARAM wParam, const LPARAM lParam)
+BluetoothMonitor::BluetoothStatus BluetoothMonitor::TranslateMessage(const UINT message, const WPARAM wParam, const LPARAM lParam)
 {
-    if (!(message == WM_DEVICECHANGE && wParam == DBT_CUSTOMEVENT))
-        return nullptr;
+    if (message != WM_DEVICECHANGE || wParam != DBT_CUSTOMEVENT || !lParam)
+        return BluetoothStatus::Unknown;
 
     DEV_BROADCAST_HDR* header = reinterpret_cast<DEV_BROADCAST_HDR*>(lParam);
     if (header->dbch_devicetype != DBT_DEVTYP_HANDLE)
-        return nullptr;
+        return BluetoothStatus::Unknown;
 
     DEV_BROADCAST_HANDLE* handle = reinterpret_cast<DEV_BROADCAST_HANDLE*>(header);
     if (!IsEqualGUID(handle->dbch_eventguid, GUID_BLUETOOTH_RADIO_IN_RANGE))
-        return nullptr;
+        return BluetoothStatus::Unknown;
 
     BTH_RADIO_IN_RANGE* radio_in_range = reinterpret_cast<BTH_RADIO_IN_RANGE*>(handle->dbch_data);
-    if (0 != strcmp(deviceName, radio_in_range->deviceInfo.name))
-        return nullptr;
+    if (!radio_in_range)
+        return BluetoothStatus::Unknown;
 
-    return radio_in_range;
+    if (m_deviceName != radio_in_range->deviceInfo.name)
+        return BluetoothStatus::Unknown;
+    
+    if (radio_in_range->deviceInfo.flags & BDIF_CONNECTED)
+        return BluetoothStatus::Connected;
+
+    return BluetoothStatus::Disconnected;
 }

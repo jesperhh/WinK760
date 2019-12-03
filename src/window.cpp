@@ -193,18 +193,15 @@ LRESULT CALLBACK Window::OnNotifyIcon(HWND hWnd, UINT message, WPARAM wParam, LP
 LRESULT Window::OnDeviceChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     // Verify if WM_DEVICE_CHANGE was a bluetooth connect/disconnect message
-    BTH_RADIO_IN_RANGE* radio_in_range = monitor->TranslateMessage(message, wParam, lParam);
-    if (radio_in_range)
+    switch (monitor->TranslateMessage(message, wParam, lParam))
     {
-        if (radio_in_range->deviceInfo.flags & BDIF_CONNECTED)
-        {
-            notifyIcon->Balloon(_T("Connected"));
-            worker->Work();
-        }
-        else
-        {
-            notifyIcon->Balloon(_T("Disconnected"));
-        }
+    case BluetoothMonitor::BluetoothStatus::Connected:
+        notifyIcon->Balloon(_T("Connected"));
+        worker->Work();
+        break;
+    case BluetoothMonitor::BluetoothStatus::Disconnected:
+        notifyIcon->Balloon(_T("Disconnected"));
+        break;
     }
 
     return DefWindowProc(hWnd, message, wParam, lParam);

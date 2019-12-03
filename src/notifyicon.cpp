@@ -2,55 +2,32 @@
 #include "notifyicon.h"
 #include "res/resource.h"
 
-#ifdef __MINGW32__
-enum _LI_METRIC
-{
-    LIM_SMALL, // corresponds to SM_CXSMICON/SM_CYSMICON
-    LIM_LARGE  // corresponds to SM_CXICON/SM_CYICON
-};
-#endif // !LIM_SMALL
-
 NotifyIcon::NotifyIcon(HINSTANCE hInstance, HWND hWnd)
 {
-    ZeroMemory(&this->notifyIconData, sizeof(NOTIFYICONDATA));
+    m_notifyIconData.cbSize = sizeof(NOTIFYICONDATA);
+    LoadIconMetric(hInstance, MAKEINTRESOURCE(IDI_ICON), LIM_SMALL, &m_notifyIconData.hIcon);
+    m_notifyIconData.hWnd = hWnd;
+    m_notifyIconData.uID = 0;
+    m_notifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+    m_notifyIconData.uCallbackMessage = WM_APP_NOTIFY_ICON;
+    m_notifyIconData.uVersion = NOTIFYICON_VERSION;
+    m_notifyIconData.dwInfoFlags = NIIF_INFO;
 
-    notifyIconData.cbSize = sizeof(NOTIFYICONDATA);
-#ifdef __MINGW32__
-    notifyIconData.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON));
-#else
-    LoadIconMetric(hInstance, MAKEINTRESOURCE(IDI_ICON), LIM_SMALL, &notifyIconData.hIcon);
-#endif
-    notifyIconData.hWnd = hWnd;
-    notifyIconData.uID = 0;
-    notifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-    notifyIconData.uCallbackMessage = WM_APP_NOTIFY_ICON;
-    notifyIconData.uVersion = NOTIFYICON_VERSION;
-    notifyIconData.dwInfoFlags = NIIF_INFO;
+    ::swprintf(m_notifyIconData.szTip, sizeof(m_notifyIconData.szTip), _T("WinK760"));
+    ::swprintf(m_notifyIconData.szInfoTitle, sizeof(m_notifyIconData.szInfoTitle), _T("WinK760"));
 
-    #ifdef __MINGW32__
-    ::swprintf(notifyIconData.szTip, _T("WinK760"));
-    ::swprintf(notifyIconData.szInfoTitle, _T("WinK760"));
-    #else
-    ::swprintf(notifyIconData.szTip, 128, _T("WinK760"));
-    ::swprintf(notifyIconData.szInfoTitle, 64, _T("WinK760"));
-    #endif // !LIM_SMALL
-
-    Shell_NotifyIcon(NIM_ADD, &notifyIconData);
+    Shell_NotifyIcon(NIM_ADD, &m_notifyIconData);
 }
 
 NotifyIcon::~NotifyIcon(void)
 {
-    Shell_NotifyIcon(NIM_DELETE, &notifyIconData);
-    DestroyIcon(notifyIconData.hIcon);
+    Shell_NotifyIcon(NIM_DELETE, &m_notifyIconData);
+    DestroyIcon(m_notifyIconData.hIcon);
 }
 
-void NotifyIcon::Balloon(const TCHAR* info)
+void NotifyIcon::Balloon(const std::wstring& info)
 {
-    notifyIconData.uFlags |= NIF_INFO;
-#ifdef __MINGW32__
-    ::swprintf(notifyIconData.szInfo, info);
-#else
-    ::swprintf(notifyIconData.szInfo, 256, info);
-#endif // !LIM_SMALL
-    Shell_NotifyIcon(NIM_MODIFY, &notifyIconData);
+    m_notifyIconData.uFlags |= NIF_INFO;
+    ::swprintf(m_notifyIconData.szInfo, sizeof(m_notifyIconData.szInfo), info.c_str());
+    Shell_NotifyIcon(NIM_MODIFY, &m_notifyIconData);
 }

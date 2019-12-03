@@ -1,3 +1,5 @@
+#pragma once
+
 class Worker
 {
 public:
@@ -15,6 +17,7 @@ private:
     HANDLE doWorkEvent;
     HANDLE threadHandle;
 
-    DISALLOW_COPY_AND_ASSIGN(Worker);
+    Worker(Worker const &) = delete;
+    void operator=(Worker const &worker) = delete;
 };
 
