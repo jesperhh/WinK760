@@ -40,6 +40,7 @@ EjectKey::EjectKey(HWND hWnd)
     RegisterRawInputDevices(&device, 1, sizeof(RAWINPUTDEVICE));
 
     // Send F13 (0x0064 unless remapped via scancode map in registry
+    m_scanCode = 0x64;
     BYTE extendedScanCode = 0x00;
     GetRemappedScanCode(extendedScanCode, m_scanCode);
     BYTE key = static_cast<BYTE>(MapVirtualKey(m_scanCode, MAPVK_VSC_TO_VK));
@@ -50,7 +51,6 @@ EjectKey::EjectKey(HWND hWnd)
 
     // Store eject key remap and delay/rate info
     m_flags = extendedScanCode == 0 ? 0 : KEYEVENTF_EXTENDEDKEY;
-    m_scanCode = m_scanCode;
     m_rate = 400 - (WORD)(((float)(m_rate)) * 11.5f);
     m_delay = (m_delay + 1) * 250;
     m_virtualKey = key;
