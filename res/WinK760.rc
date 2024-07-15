@@ -99,7 +99,7 @@ IDI_ICON                ICON                    "icon.ico"
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUT               "WinK760\n\nCopyright Jesper HellesÅEHansen 2013-2024"
+    IDS_ABOUT               "WinK760\n\nCopyright Jesper Helles¯ Hansen 2013-2024"
 END
 
 #endif    // Danish (Denmark) resources
