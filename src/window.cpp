@@ -20,8 +20,17 @@ Window::~Window(void)
 
 LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static UINT s_uTaskbarRestart = WM_NULL;
+	// When TaskbarRestart
+	if (message != WM_NULL && message == s_uTaskbarRestart) {
+		notifyIcon.reset();
+		notifyIcon.reset(new NotifyIcon(GetModuleHandle(NULL), hwnd));
+	}
+
     switch (message)
     {
+	case WM_CREATE:
+		s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
     case WM_SYSCOMMAND:
         switch (wParam)
         {
