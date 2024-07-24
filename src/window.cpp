@@ -20,51 +20,55 @@ Window::~Window(void)
 
 LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static UINT s_uTaskbarRestart = WM_NULL;
-	// When TaskbarRestart
-	if (message != WM_NULL && message == s_uTaskbarRestart) {
-		notifyIcon.reset();
-		notifyIcon.reset(new NotifyIcon(GetModuleHandle(NULL), hwnd));
-	}
+    static UINT s_uTaskbarRestart = WM_NULL;
+    // When TaskbarRestart
+    if (message != WM_NULL && message == s_uTaskbarRestart) {
+        notifyIcon.reset();
+        notifyIcon.reset(new NotifyIcon(GetModuleHandle(NULL), hwnd));
+    }
 
     switch (message)
     {
-	case WM_CREATE:
-		s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
-    case WM_SYSCOMMAND:
-        switch (wParam)
-        {
-        case SC_MINIMIZE:
-        case SC_CLOSE:
+        case WM_CREATE:
+            s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
+            break;
+        case WM_SYSCOMMAND:
+            switch (wParam)
+            {
+                case SC_MINIMIZE:
+                case SC_CLOSE:
+                    ShowWindow(hWnd, SW_HIDE);
+                    break;
+                default:
+                    return DefWindowProc(hWnd, message, wParam, lParam);
+            }
+
+            break;
+        case WM_NCHITTEST:
+            {
+                LRESULT hit = DefWindowProc(hWnd, message, wParam, lParam);
+                return hit == HTCLIENT ? HTCAPTION : hit;
+            }
+        case WM_APP_NOTIFY_ICON:
+            return OnNotifyIcon(hWnd, message, wParam, lParam);
+        case WM_DEVICECHANGE:
+            return OnDeviceChange(hWnd, message, wParam, lParam);
+        case WM_INPUT:
+            return ejectKey->OnRawInput(hWnd, message, wParam, lParam);
+        case WM_PAINT:
+            OnPaint(hWnd);
+            break;
+        case WM_CLOSE:
             ShowWindow(hWnd, SW_HIDE);
+            break;
+        case WM_DESTROY:
+            worker->Exit();
+            PostQuitMessage(0);
             break;
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
-        }
-    case WM_NCHITTEST:
-        {
-            LRESULT hit = DefWindowProc(hWnd, message, wParam, lParam);
-            return hit == HTCLIENT ? HTCAPTION : hit;
-        }
-    case WM_APP_NOTIFY_ICON:
-        return OnNotifyIcon(hWnd, message, wParam, lParam);
-    case WM_DEVICECHANGE:
-        return OnDeviceChange(hWnd, message, wParam, lParam);
-    case WM_INPUT:
-        return ejectKey->OnRawInput(hWnd, message, wParam, lParam);
-    case WM_PAINT:
-        OnPaint(hWnd);
-        break;
-    case WM_CLOSE:
-        ShowWindow(hWnd, SW_HIDE);
-        break;
-    case WM_DESTROY:
-        worker->Exit();
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
     }
+
     return 0;
 }
 
