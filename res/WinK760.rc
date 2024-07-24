@@ -19,6 +19,44 @@
 LANGUAGE LANG_DANISH, SUBLANG_DEFAULT
 #pragma code_page(1252)
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,8,1,0
+ PRODUCTVERSION 0,8,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x0L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104b0"
+        BEGIN
+            VALUE "FileDescription", "WinK760"
+            VALUE "FileVersion", "0.8.1.0"
+            VALUE "InternalName", "WinK760"
+            VALUE "LegalCopyright", "Copyright (C) 2024"
+            VALUE "OriginalFilename", "WinK760"
+            VALUE "ProductName", "WinK760"
+            VALUE "ProductVersion", "0.8.1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x411, 1200
+    END
+END
+
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -61,7 +99,7 @@ IDI_ICON                ICON                    "icon.ico"
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUT               "WinK760\n\nCopyright Jesper Hellesø Hansen 2013-2019"
+    IDS_ABOUT               "WinK760\n\nCopyright Jesper Hellesø Hansen 2013-2024"
 END
 
 #endif    // Danish (Denmark) resources
